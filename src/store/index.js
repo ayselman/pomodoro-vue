@@ -7,13 +7,16 @@ var ls = new SecureLS({ isCompression: false });
 export default createStore({
   state: {
     user: null,
+    pomodoro: null,
     saltKey: "haydaHobbaGizliKey!456?",
     schema: [],
   },
   mutations: {
     setUser(state, user) {
-      console.log("user :>> ", user);
       state.user = user;
+    },
+    setPomodoro(state, pomodoro){
+      state.pomodoro = pomodoro
     },
     logoutUser(state) {
       state.user = null;
@@ -32,6 +35,7 @@ export default createStore({
     },
     _currentUserId: (state) => state?.user?.id,
     _getCurrentRole: (state) => parseInt(state?.user?.role),
+    _getPomodoro: (state) => state?.pomodoro,
     _saltKey: (state) => state.saltKey,
     _getSchema: (state) => state?.schema,
   },
