@@ -1,51 +1,131 @@
 <template>
   <div class="hero min-h-screen bg-dark">
-    <div class="w-full h-full items-center justify-center flex flex-col space-y-6">
-        <!-- Menu -->
-        <div class="flex space-x-4">
-          
-          <div class="p-2 rounded-btn cursor-pointer"  :class="pomodoro.type == 'pomodoro' ? 'bg-primary':'text-white'" @click="pomodoro.type = 'pomodoro'"> Pomodoro </div>
-          <div class="p-2 rounded-btn cursor-pointer"  :class="pomodoro.type == 'short_break' ? 'bg-primary':'text-white'" @click="pomodoro.type = 'short_break'"> Short Break </div>
-          <div class="p-2 rounded-btn cursor-pointer"  :class="pomodoro.type == 'long_break' ? 'bg-primary':'text-white'" @click="pomodoro.type = 'long_break'"> Long Break </div>
+    <div class="w-full h-full items-center justify-center flex flex-col lg:space-y-14 space-y-8">
 
-      
+
+        <!-- Menu -->
+        <div class="flex lg:space-x-4 space-x-2">
+          <div class="lg:p-2 p-1 rounded-btn cursor-pointer text-sm lg:text-xl"  :class="pomodoro.type == 'pomodoro' ? 'bg-primary':'text-white'"> Pomodoro </div>
+          <div class="lg:p-2 p-1 rounded-btn cursor-pointer text-sm lg:text-xl"  :class="pomodoro.type == 'short_break' ? 'bg-red-500':'text-white'"> Short Break </div>
+          <div class="lg:p-2 p-1 rounded-btn cursor-pointer text-sm lg:text-xl"  :class="pomodoro.type == 'long_break' ? 'bg-red-800':'text-white'"> Long Break</div>
         </div>
+
         <!-- timer -->
         <div class="relative">
-          <div class="text-white text-12xl font-semibold leading-none px-4">
-
-            <vue-countdown :auto-start="start" :time="pomodoro.currentTime" @end="onCountdownEnd"  @progress="timeProgress" v-slot="{hours, minutes, seconds }" v-if="start">
-                <div>{{ hours > 0 ? formatNumber(hours) + ':': '' }}{{ formatNumber(minutes) }}:{{ formatNumber(seconds) }} </div> 
-            </vue-countdown>
+          <div class="text-white text-8xl lg:text-12xl font-semibold leading-none px-4">
+            <div v-if="start">
+              <vue-countdown :auto-start="start" :time="pomodoro.currentTime" @end="onCountdownEnd"  @progress="timeProgress" v-slot="{hours, minutes, seconds }" >
+                  <div>{{ hours > 0 ? formatNumber(hours) + ':': '' }}{{ formatNumber(minutes) }}:{{ formatNumber(seconds) }} </div> 
+              </vue-countdown>
+            </div>
+            
             <div v-else>{{ formatTimestamp(pomodoro.lastTime) }}</div>
 
           </div>
-          <div class="bg-white opacity-20 w-full rounded-box  h-16 -mt-16"></div>
-          
-          
+          <div class="w-full  lg:h-16 lg:-mt-16 h-6 -mt-6">
+            <div class="flex items-end justify-end bg-white opacity-20 w-full lg:rounded-t-box rounded-t-lg  h-6 -mt-6 lg:h-20 lg:-mt-20"></div>
+            <!--slider-->
+            <div class="w-full h-1 flex relative">
+                <div class="flex" v-for="p in pomodoroArr" :key="p" :style="`width: ${calculatePercentage(p)}%`" :class="getBg(p)"></div>
+                              
+                <div class="bg-gray-400 absolute left-0 top-0 h-full" :style="`width: ${calculatePercentageTotal()}%`"></div>
+            </div>
+          </div>
         </div>
 
         <!-- options -->
-        <div class="pt-5">
-          <div class="w-full flex space-x-4 justify-end">
-            <button class="bg-primary p-1 rounded-full cursor-pointer hover:opacity-80" @click="end = true">
-              <CogIcon class="w-10 text-gray-800" />
+        <div class="pt-12">
+          <div class="w-full flex lg:space-x-4 space-x-3 justify-end">
+            <button class="bg-primary p-1 w-10 h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer hover:opacity-80" @click="settiongs = !settiongs">
+              <CogIcon class=" text-gray-800" />
             </button>
 
-            <button class="bg-primary p-1 rounded-full cursor-pointer hover:opacity-80" >
-              <PlayIcon class="w-10 text-gray-800" @click="start = !start" v-if="!start"/>
-              <PauseIcon class="w-10 text-gray-800" @click="start = !start" v-else/>
+            <button class="bg-primary p-1 w-10 h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer hover:opacity-80" >
+              <PlayIcon class="text-gray-800" @click="start = !start" v-if="!start"/>
+              <PauseIcon class="text-gray-800" @click="start = !start" v-else/>
             </button>
 
-            <button class="bg-primary p-1 rounded-full cursor-pointer hover:opacity-80" >
-              <RefreshIcon class="w-10 text-gray-800" @click="setReset"/>
+            <button class="bg-primary  p-1 w-10 h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer hover:opacity-80" >
+              <RefreshIcon class=" text-gray-800" @click="setReset"/>
             </button>
 
-            <button class="bg-primary p-1 rounded-full cursor-pointer hover:opacity-80" v-if="pomodoro.time != pomodoro.lastTime">
-              <TrashIcon class="w-10 text-gray-800" @click="setResetAll"/>
+            <button class="bg-primary  p-1 w-10 h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer hover:opacity-80">
+              <TrashIcon class=" text-gray-800" @click="setResetAll"/>
             </button>
           </div>
         </div>
+
+
+      <div v-if="settiongs">
+        <div class="flex items-end justify-end">
+          <button class="btn btn-square btn-sm btn-primary rounded-none" @click="settiongs = !settiongs">
+            <XIcon class="w-6"/>
+          </button>
+        </div>
+
+        <div class="bg-white p-3  flex flex-col space-y-10 space-x-0 lg:flex-row lg:space-x-10 lg:space-y-0 rounded-b-box rounded-l-box">
+            <div class="flex flex-col space-y-8">
+              <!-- Pomodoro -->
+              <div class="flex space-x-2 items-center justify-center">
+                <div class="text-gray-400 w-32">Pomodoro(dk)</div>
+                <div class="text-2xl w-8 text-center">{{ pomodoro.pomodoro }}</div>
+                <div class="flex space-x-1">             
+                  <button class="btn btn-square btn-sm btn-primary" :class="pomodoro.pomodoro <= 0 ? 'invisible':''" @click="setPomodoro('pomodoro',-5)">
+                    <MinusIcon class="w-6"/>
+                  </button>
+                  <button class="btn btn-square btn-sm btn-primary" @click="setPomodoro('pomodoro',5)">
+                    <PlusIcon class="w-6"/>
+                  </button>
+                </div>
+              </div>
+
+              <!-- short_break -->
+              <div class="flex space-x-2 items-center justify-center">
+                <div class="text-gray-400 w-32">Short Break</div>
+                <div class="text-2xl w-8 text-center">{{ pomodoro.short_break }}</div>
+                <div class="flex space-x-1">             
+                  <button class="btn btn-square btn-sm btn-primary" :class="pomodoro.short_break == 0 ? 'invisible':''" @click="setPomodoro('short_break',-1)">
+                    <MinusIcon class="w-6"/>
+                  </button>
+                  <button class="btn btn-square btn-sm btn-primary" @click="setPomodoro('short_break',1)">
+                    <PlusIcon class="w-6"/>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col space-y-8">
+              <!-- long_break -->
+              <div class="flex space-x-2 items-center justify-center">
+                <div class="text-gray-400 w-32">Long Break</div>
+                <div class="text-2xl w-8 text-center">{{ pomodoro.long_break }}</div>
+                <div class="flex space-x-1">             
+                  <button class="btn btn-square btn-sm btn-primary" :class="pomodoro.long_break == 0 ? 'invisible':''" @click="setPomodoro('long_break',-1)">
+                    <MinusIcon class="w-6"/>
+                  </button>
+                  <button class="btn btn-square btn-sm btn-primary" @click="setPomodoro('long_break',1)">
+                    <PlusIcon class="w-6"/>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Period -->
+              <div class="flex space-x-2 items-center justify-center">
+                <div class="text-gray-400 w-32">Period</div>
+                <div class="text-2xl w-8 text-center">{{ pomodoro.period }}</div>
+                <div class="flex space-x-1">             
+                  <button class="btn btn-square btn-sm btn-primary" :class="pomodoro.period == 0 ? 'invisible':''" @click="setPomodoro('period',-1)">
+                    <MinusIcon class="w-6"/>
+                  </button>
+                  <button class="btn btn-square btn-sm btn-primary" @click="setPomodoro('period',1)">
+                    <PlusIcon class="w-6"/>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+      </div>
     </div>
 
   </div>
@@ -56,38 +136,52 @@
 
 <script setup>
 import {ref, watch, onMounted} from 'vue'
-import { PlayIcon, PauseIcon, CogIcon, RefreshIcon, TrashIcon } from "@heroicons/vue/solid";
+import { PlayIcon, PauseIcon, CogIcon, RefreshIcon, TrashIcon, PlusIcon, MinusIcon, XIcon} from "@heroicons/vue/solid";
 import VueCountdown from '@chenfengyuan/vue-countdown';
 import store from '../store/index'
 
-
-const defaultPomodoro = 1;
 const start     = ref(false)
 const settiongs = ref(false)
+const pomodoroArr = ref([])
 
-const pomodoro = ref({
+const defaultPomodoro = 45;
+const pomodoroDefault = {
+  sort_pomodoro: ["pomodoro", "short_break", "long_break"],
+  finish_count: 0,
   pomodoro: defaultPomodoro,
   long_break: 10,
   short_break: 5,
   period: 2,
-  currentPeriod: 1,
+  current_period: 1,
   time: defaultPomodoro * 60 * 1000,
   currentTime: defaultPomodoro * 60 * 1000,
   lastTime: defaultPomodoro * 60 * 1000,
-  type: 'pomodoro'
-})
+  type: 'pomodoro',
+  total_seconds: 0
+}
 
-const pomodoroDefault = ref(pomodoro.value)
+
+
+const pomodoro = ref({})
+
 onMounted(() => {
-  const storePomodoro = store.getters._getPomodoro
-  if (storePomodoro) {
-    pomodoro.value = storePomodoro
-  }
+    const storePomodoro = store.getters._getPomodoro
+    if (storePomodoro) {
+      pomodoro.value = {...storePomodoro}
+      setPomodoroArr(storePomodoro)
+    }else{
+      pomodoro.value = ref({...pomodoroDefault})
+      setPomodoroArr(pomodoroDefault)
+    }
 })
 
-watch(pomodoro, (cPomodoro) => {
+
+
+watch(pomodoro, (cPomodoro, lPomodoro) => {
+  setPomodoroArr(cPomodoro)
   store.commit("setPomodoro", cPomodoro)
 }, {deep: true})
+
 
 watch(start, (cStart) => {
   if (cStart) {
@@ -96,13 +190,63 @@ watch(start, (cStart) => {
 })
 
 
-const onCountdownEnd = () => {
-console.log("bitti");
+const setPomodoroArr = (cPomodoro) => {
+  let newArr = []
+  for (let p = 0; p < cPomodoro['period']; p++) {
+      newArr.push('pomodoro')
+      newArr.push(cPomodoro['sort_pomodoro'][(p % (cPomodoro['sort_pomodoro'].length - 1)) + 1])
+  }
+
+  pomodoroArr.value = [...newArr]
+}
+
+
+const setPomodoro = (type,number) => {
+  if (pomodoro.value.type == type) {
+    let newTimeDk = pomodoro.value[pomodoro.value.type] + number;
+    let newPomodor = {...pomodoro.value, time: newTimeDk * 60 * 1000, currentTime: newTimeDk * 60 * 1000, lastTime: newTimeDk * 60 * 1000}
+    newPomodor[type] = newTimeDk;
+    
+    pomodoro.value = {...newPomodor}
+  }else{
+    pomodoro.value[type] = pomodoro.value[type] + number
+  }
+}
+
+
+const onCountdownEnd = () => { 
+  let newPomodoro = {...pomodoro.value}
+  
+  
+  newPomodoro['finish_count'] = newPomodoro['finish_count'] + 1
+  const newType = pomodoroArr.value[newPomodoro['finish_count']]
+
+  newPomodoro['type']          = newType
+  newPomodoro['time']          = newPomodoro[newType] * 60 * 1000
+  newPomodoro['currentTime']   = newPomodoro['time']
+  newPomodoro['lastTime']      = newPomodoro['time']
+
+
+
+  if (newPomodoro['finish_count'] % newPomodoro['sort_pomodoro'].length - 1 == 0) {
+    //console.log("period bitti");
+    newPomodoro['current_period']= newPomodoro['current_period'] + 1
+  }
+  
+
+  if (newPomodoro['current_period'] == newPomodoro['period'] + 1) {
+    start.value = false
+    //console.log("tamamen bitti");
+  }else{
+    start.value = false
+    pomodoro.value = {...newPomodoro}
+    setTimeout(() => start.value = true, 1000);
+  }
 }
 
 
 const timeProgress = (data) => {
-pomodoro.value.lastTime = data.totalMilliseconds
+  pomodoro.value = {...pomodoro.value, lastTime: data.totalMilliseconds, total_seconds: pomodoro.value.total_seconds + 1}
 }
 
 const formatNumber = (n) => {
@@ -110,6 +254,22 @@ return n.toString().length == 1 ? `0${n}` : n
 }
 
 
+const calculatePercentage = (type) => {
+  let totalNumber = pomodoroArr.value.map(x => pomodoro.value[x]).reduce((x, y) => x + y)
+  if( totalNumber <= 0)  return 0
+  return Math.ceil((100 * pomodoro.value[type]) / totalNumber)
+}
+
+
+const calculatePercentageTotal = () => {
+  if(pomodoroArr.value.length == 0) return false
+  let totalNumber = pomodoroArr.value?.map(x => pomodoro.value[x]).reduce((x, y) => x + y)
+
+  if (totalNumber) {
+    totalNumber = totalNumber * 60
+  }
+  return (100 * pomodoro.value.total_seconds)  / totalNumber
+}
 
 const formatTimestamp = (durationInMillis) => {
     const hours = Math.floor(durationInMillis / (1000 * 60 * 60)).toString().padStart(2, '0');
@@ -127,12 +287,22 @@ const formatTimestamp = (durationInMillis) => {
 const setReset = () => {
   start.value = false
   pomodoro.value = {...pomodoro.value, currentTime: pomodoro.value.time, lastTime: pomodoro.value.time}
+}
 
+
+const getBg = (type) => {
+  let bg = {
+    'pomodoro':'bg-primary',
+    'short_break':'bg-red-500',
+    'long_break':'bg-red-800'
+  }   
+
+  return bg[type]
 }
 
 const setResetAll = () => {
   start.value = false
-  pomodoro.value = {...pomodoroDefault.value, currentTime: pomodoroDefault.value.time, lastTime: pomodoroDefault.value.time}
+  pomodoro.value = {...pomodoroDefault}
 }
 
 
