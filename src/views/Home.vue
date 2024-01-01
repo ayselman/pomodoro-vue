@@ -162,20 +162,18 @@ const pomodoroDefault = {
 
 
 
-const pomodoro = ref({})
+const pomodoro = ref({...pomodoroDefault})
 
 onMounted(() => {
     const storePomodoro = store.getters._getPomodoro
+    
     if (storePomodoro) {
       pomodoro.value = {...storePomodoro}
       setPomodoroArr(storePomodoro)
     }else{
-      pomodoro.value = ref({...pomodoroDefault})
       setPomodoroArr(pomodoroDefault)
     }
 })
-
-
 
 watch(pomodoro, (cPomodoro, lPomodoro) => {
   setPomodoroArr(cPomodoro)
