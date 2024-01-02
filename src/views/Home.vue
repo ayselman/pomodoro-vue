@@ -2,6 +2,9 @@
   <div class="hero min-h-screen bg-dark">
     <div class="w-full h-full items-center justify-center flex flex-col lg:space-y-14 space-y-8">
 
+        <div class="py-4">
+          <img class="w-16 lg:w-28" src="/logo.png" alt="">
+        </div>
 
         <!-- Menu -->
         <div class="flex lg:space-x-4 space-x-2">
