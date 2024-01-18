@@ -28,10 +28,11 @@
           <div class="w-full  lg:h-16 lg:-mt-16 h-6 -mt-6">
             <div class="flex items-end justify-end bg-white opacity-20 w-full lg:rounded-t-box rounded-t-lg  h-6 -mt-6 lg:h-20 lg:-mt-20"></div>
             <!--slider-->
-            <div class="w-full h-1 flex relative">
-                <div class="flex" v-for="p in pomodoroArr" :key="p" :style="`width: ${calculatePercentage(p)}%`" :class="getBg(p)"></div>
-                              
-                <div class="bg-gray-400 absolute left-0 top-0 h-full" :style="`width: ${calculatePercentageTotal()}%`"></div>
+            <div class="w-full h-1 flex">
+                <div class="flex overflow-hidden relative" v-for="(p,k) in pomodoroArr" :key="p" :style="`width: ${calculatePercentage(p)}%`" :class="getBg(p)">
+                  <div class="bg-gray-400 absolute left-0 top-0 h-full" :class="pomodoro.total_part > k ? 'w-full' : 'w-0'" ></div>
+                  <div class="bg-gray-400 absolute left-0 top-0 h-full" v-if="pomodoro.total_part == k" :style="setPercentage()"></div>
+                </div>
             </div>
           </div>
         </div>
@@ -160,7 +161,7 @@ const pomodoroDefault = {
   currentTime: defaultPomodoro * 60 * 1000,
   lastTime: defaultPomodoro * 60 * 1000,
   type: 'pomodoro',
-  total_seconds: 0
+  total_part: 0
 }
 
 
@@ -226,7 +227,8 @@ const onCountdownEnd = () => {
   newPomodoro['time']          = newPomodoro[newType] * 60 * 1000
   newPomodoro['currentTime']   = newPomodoro['time']
   newPomodoro['lastTime']      = newPomodoro['time']
-
+  newPomodoro['total_part']    = newPomodoro['total_part'] + 1
+  
 
 
   if (newPomodoro['finish_count'] % newPomodoro['sort_pomodoro'].length - 1 == 0) {
@@ -243,11 +245,13 @@ const onCountdownEnd = () => {
     pomodoro.value = {...newPomodoro}
     setTimeout(() => start.value = true, 1000);
   }
+
 }
 
 
 const timeProgress = (data) => {
-  pomodoro.value = {...pomodoro.value, lastTime: data.totalMilliseconds, total_seconds: pomodoro.value.total_seconds + 1}
+  //pomodoro.value = {...pomodoro.value, lastTime: data.totalMilliseconds, total_seconds: pomodoro.value.total_seconds + 1}
+  pomodoro.value = {...pomodoro.value, lastTime: data.totalMilliseconds}
 }
 
 const formatNumber = (n) => {
@@ -261,16 +265,15 @@ const calculatePercentage = (type) => {
   return Math.ceil((100 * pomodoro.value[type]) / totalNumber)
 }
 
+const setPercentage = () => {
+  let time = pomodoro.value.time
+  let lastTime = pomodoro.value.lastTime
+  let percentage = (100 * lastTime) / time
 
-const calculatePercentageTotal = () => {
-  if(pomodoroArr.value.length == 0) return false
-  let totalNumber = pomodoroArr.value?.map(x => pomodoro.value[x]).reduce((x, y) => x + y)
-
-  if (totalNumber) {
-    totalNumber = totalNumber * 60
-  }
-  return (100 * pomodoro.value.total_seconds)  / totalNumber
+  
+  return `width: ${100 - percentage}%`
 }
+
 
 const formatTimestamp = (durationInMillis) => {
     const hours = Math.floor(durationInMillis / (1000 * 60 * 60)).toString().padStart(2, '0');
